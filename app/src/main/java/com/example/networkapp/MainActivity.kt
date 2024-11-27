@@ -7,15 +7,13 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.TextView
-import android.widget.Toast
-import com.android.volley.Request
 import com.android.volley.RequestQueue
 import com.android.volley.toolbox.JsonObjectRequest
-import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
 import com.squareup.picasso.Picasso
 import org.json.JSONObject
 import java.io.File
+import java.io.FileInputStream
 import java.io.FileOutputStream
 
 // TODO (2: Add function saveComic(...) to save comic info when downloaded
@@ -52,8 +50,8 @@ class MainActivity : AppCompatActivity() {
 
         preferences = getPreferences(MODE_PRIVATE)
         autoSave = preferences.getBoolean(AUTO_SAVE_KEY, false)
-        if (autoSave) {
-
+        if (file.exists()) {
+            loadComic()
         }
         showButton.setOnClickListener {
             downloadComic(numberEditText.text.toString())
@@ -82,9 +80,21 @@ class MainActivity : AppCompatActivity() {
 
     // Implement this function
     private fun saveComic(comicObject: JSONObject) {
-        val outputStream = FileOutputStream(file)
-        outputStream.write()
-        outputStream.close()
+        try {
+            val outputStream = FileOutputStream(file)
+            outputStream.write(comicObject.toString().toByteArray())
+            outputStream.close()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    private fun loadComic() {
+        val inputStream = FileInputStream(file)
+        val jsonString = inputStream.bufferedReader().use { it.readText()}
+        val comicObject = JSONObject(jsonString)
+        showComic(comicObject)
+        inputStream.close()
     }
 
 
